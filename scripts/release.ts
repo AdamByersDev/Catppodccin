@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import AdmZip from "adm-zip";
+import sharp from "sharp";
 import {
   flavors,
   type ColorScheme,
@@ -47,7 +48,26 @@ const TEXT_EXTENSIONS = new Set([
   ".rsbs",
   ".rfms",
   ".lua",
+  ".svg",
 ]);
+
+const FLAVOR_COLOR_NAMES = [
+  "text",
+  "subtext1",
+  "subtext0",
+  "overlay2",
+  "overlay1",
+  "overlay0",
+  "surface2",
+  "surface1",
+  "surface0",
+  "base",
+  "mantle",
+  "crust",
+] as const;
+
+const SOURCE_SVG_FLAVOR_NAME = "mocha";
+const SOURCE_SVG_SCHEME_NAME = "mauve";
 
 const packageJson = JSON.parse(
   fs.readFileSync(PACKAGE_JSON_PATH, "utf8"),
@@ -80,9 +100,7 @@ function escapeRegExp(value: string): string {
 }
 
 /**
- * Deletes the old dist folder and recreates it.
- *
- * This keeps every release build clean.
+ * Deletes the old dist folder and recreates dist/release.
  */
 function cleanDistFolder(): void {
   if (fs.existsSync(DIST_FOLDER)) {
@@ -127,6 +145,13 @@ function shouldProcessFile(filePath: string): boolean {
 }
 
 /**
+ * Returns true if a file is an SVG that should be converted to BMP.
+ */
+function isSvgFile(filePath: string): boolean {
+  return path.extname(filePath).toLowerCase() === ".svg";
+}
+
+/**
  * Gets a normal Catppuccin colour from the selected flavour.
  *
  * Handles tokens like:
@@ -144,6 +169,27 @@ function getFlavorColor(flavor: Flavor, colorName: string): string | null {
   }
 
   return null;
+}
+
+/**
+ * Gets an accent/scheme colour from a flavour by name.
+ */
+function getColorSchemeColor(
+  flavor: Flavor,
+  schemeName: string,
+): string | null {
+  const scheme = flavor.colorSchemes.find((colorScheme) => {
+    return colorScheme.name.toLowerCase() === schemeName.toLowerCase();
+  });
+
+  return scheme?.color ?? null;
+}
+
+/**
+ * Normalizes colour strings to lowercase 6-digit hex without #.
+ */
+function normalizeHexColor(value: string): string {
+  return value.trim().replace(/^#/, "").toLowerCase();
 }
 
 /**
@@ -173,26 +219,51 @@ function collectFiles(folderPath: string): string[] {
 }
 
 /**
- * Builds a map of old filenames to new filenames.
+ * Builds the final filename for a copied source file.
  *
  * Every file becomes:
  *   flavor-color-filename
  *
+ * SVG files are converted to BMP, so they become:
+ *   flavor-color-filename.bmp
+ */
+function buildNewFileName(
+  oldFileName: string,
+  flavorSlug: string,
+  schemeSlug: string,
+): string {
+  const prefix = `${flavorSlug}-${schemeSlug}-`;
+  const extension = path.extname(oldFileName).toLowerCase();
+
+  if (extension === ".svg") {
+    const baseName = path.basename(oldFileName, extension);
+    return `${prefix}${baseName}.bmp`;
+  }
+
+  return `${prefix}${oldFileName}`;
+}
+
+/**
+ * Builds a map of old filenames to new filenames.
+ *
  * Example:
  *   Catppodccin.wps
  *   -> mocha-mauve-Catppodccin.wps
+ *
+ * Example SVG:
+ *   Battery.svg
+ *   -> mocha-mauve-Battery.bmp
  */
 function createFileRenameInfo(
   releaseFolder: string,
   flavorSlug: string,
   schemeSlug: string,
 ): FileRenameInfo[] {
-  const prefix = `${flavorSlug}-${schemeSlug}-`;
   const files = collectFiles(releaseFolder);
 
   return files.map((oldAbsolutePath) => {
     const oldFileName = path.basename(oldAbsolutePath);
-    const newFileName = `${prefix}${oldFileName}`;
+    const newFileName = buildNewFileName(oldFileName, flavorSlug, schemeSlug);
 
     const directory = path.dirname(oldAbsolutePath);
     const newAbsolutePath = path.join(directory, newFileName);
@@ -217,15 +288,10 @@ function createFileRenameInfo(
 }
 
 /**
- * Builds a map of old folder names to new folder names for folders inside
- * the wps folder.
+ * Builds a map of old/new folder names for folders inside the wps folder.
  *
  * Every folder inside wps becomes:
  *   flavor-color-foldername
- *
- * Example:
- *   wps/iModern/
- *   -> wps/mocha-mauve-iModern/
  */
 function createWpsFolderRenameInfo(
   releaseFolder: string,
@@ -289,16 +355,16 @@ function createWpsFolderRenameInfo(
         newRelativePath,
       };
     })
-    .sort((a, b) => b.oldAbsolutePath.length - a.oldAbsolutePath.length);
+    .sort((a, b) => {
+      return b.oldAbsolutePath.length - a.oldAbsolutePath.length;
+    });
 }
 
 /**
  * Replaces file references inside text files.
  *
- * This avoids double-prefixing references. For example, once
- * `iModern_bg.bmp` becomes `mocha-mauve-iModern_bg.bmp`, the script must not
- * see the `iModern_bg.bmp` part again and turn it into
- * `mocha-mauve-mocha-mauve-iModern_bg.bmp`.
+ * This only replaces the exact original relative path or exact original
+ * filename when it is not already part of a prefixed filename.
  */
 function replaceFileNameReferences(
   content: string,
@@ -311,7 +377,6 @@ function replaceFileNameReferences(
     return b.oldRelativePath.length - a.oldRelativePath.length;
   });
 
-  // Replace full relative paths first.
   for (const file of sortedRenameInfo) {
     updatedContent = updatedContent.replace(
       new RegExp(escapeRegExp(file.oldRelativePath), "g"),
@@ -319,7 +384,6 @@ function replaceFileNameReferences(
     );
   }
 
-  // Then replace bare filenames only when they are not already prefixed.
   for (const file of sortedRenameInfo) {
     const fileNamePattern = new RegExp(
       `(?<!${escapeRegExp(releasePrefix)})${escapeRegExp(file.oldFileName)}`,
@@ -335,8 +399,8 @@ function replaceFileNameReferences(
 /**
  * Replaces folder path references inside text files.
  *
- * This intentionally does not replace bare folder names, because a folder name
- * like `iModern` can also appear inside filenames such as `iModern_bg.bmp`.
+ * Do not replace bare folder names, because names like `iModern` can also
+ * appear inside filenames like `iModern_bg.bmp`.
  */
 function replaceFolderNameReferences(
   content: string,
@@ -363,27 +427,6 @@ function replaceFolderNameReferences(
  *
  * All supported tokens use:
  *   --CATPPUCCIN[data-name]
- *
- * Metadata tokens:
- *   --CATPPUCCIN[theme-name]
- *   --CATPPUCCIN[version]
- *   --CATPPUCCIN[flavor]
- *   --CATPPUCCIN[flavour]
- *   --CATPPUCCIN[flavor-id]
- *   --CATPPUCCIN[flavour-id]
- *   --CATPPUCCIN[scheme]
- *   --CATPPUCCIN[scheme-id]
- *   --CATPPUCCIN[scheme-color]
- *   --CATPPUCCIN[accent]
- *   --CATPPUCCIN[accent-color]
- *   --CATPPUCCIN[release-prefix]
- *
- * Colour tokens:
- *   --CATPPUCCIN[text]
- *   --CATPPUCCIN[subtext1]
- *   --CATPPUCCIN[base]
- *   --CATPPUCCIN[mantle]
- *   etc.
  */
 function replaceCatppuccinToken(
   token: string,
@@ -441,7 +484,119 @@ function replaceCatppuccinToken(
 }
 
 /**
- * Replaces Catppuccin tokens and filename references in one text file.
+ * Converts SVGs designed using the Mocha/Mauve palette into the target
+ * flavor/scheme palette.
+ *
+ * This means you can edit SVG files visually using normal hex colours instead
+ * of manually putting tokens inside the SVG XML.
+ *
+ * Source design assumption:
+ *   base flavour: Mocha
+ *   accent colour: Mauve
+ */
+function replaceMochaMauveSvgColors(
+  content: string,
+  targetFlavor: Flavor,
+  targetScheme: ColorScheme,
+): string {
+  const sourceFlavor = flavors.find((flavor) => {
+    return flavor.name.toLowerCase() === SOURCE_SVG_FLAVOR_NAME;
+  });
+
+  if (!sourceFlavor) {
+    throw new Error(
+      `Could not find source SVG flavor: ${SOURCE_SVG_FLAVOR_NAME}`,
+    );
+  }
+
+  const sourceScheme = sourceFlavor.colorSchemes.find((scheme) => {
+    return scheme.name.toLowerCase() === SOURCE_SVG_SCHEME_NAME;
+  });
+
+  if (!sourceScheme) {
+    throw new Error(
+      `Could not find source SVG scheme: ${SOURCE_SVG_FLAVOR_NAME}/${SOURCE_SVG_SCHEME_NAME}`,
+    );
+  }
+
+  const colorMap = new Map<string, string>();
+
+  for (const colorName of FLAVOR_COLOR_NAMES) {
+    const sourceColor = getFlavorColor(sourceFlavor, colorName);
+    const targetColor = getFlavorColor(targetFlavor, colorName);
+
+    if (sourceColor && targetColor) {
+      colorMap.set(
+        normalizeHexColor(sourceColor),
+        normalizeHexColor(targetColor),
+      );
+    }
+  }
+
+  /**
+   * Map each normal Mocha accent to the same accent in the target flavour.
+   *
+   * Example:
+   *   Mocha red -> Latte red
+   *   Mocha blue -> Frappé blue
+   */
+  for (const sourceColorScheme of sourceFlavor.colorSchemes) {
+    const targetColor = getColorSchemeColor(
+      targetFlavor,
+      sourceColorScheme.name,
+    );
+
+    if (targetColor) {
+      colorMap.set(
+        normalizeHexColor(sourceColorScheme.color),
+        normalizeHexColor(targetColor),
+      );
+    }
+  }
+
+  /**
+   * Special case:
+   * Since the design source is Mocha/Mauve, Mocha's mauve becomes the selected
+   * scheme colour for this generated build.
+   *
+   * Example:
+   *   Source #cba6f7
+   *   -> Latte/Rosewater #dc8a78
+   *   -> Mocha/Green #a6e3a1
+   */
+  colorMap.set(
+    normalizeHexColor(sourceScheme.color),
+    normalizeHexColor(targetScheme.color),
+  );
+
+  let updatedContent = content;
+
+  for (const [sourceColor, targetColor] of colorMap) {
+    /**
+     * Handles:
+     *   #cba6f7
+     *   cba6f7
+     *
+     * This intentionally keeps target SVG colours with # when the source had #,
+     * and without # when the source was bare hex.
+     */
+    updatedContent = updatedContent.replace(
+      new RegExp(`#${escapeRegExp(sourceColor)}`, "gi"),
+      `#${targetColor}`,
+    );
+
+    updatedContent = updatedContent.replace(
+      new RegExp(`\\b${escapeRegExp(sourceColor)}\\b`, "gi"),
+      targetColor,
+    );
+  }
+
+  return updatedContent;
+}
+
+/**
+ * Replaces Catppuccin tokens, SVG palette colours, and path references in one
+ * text file.
  */
 function replaceTokensInFile(
   filePath: string,
@@ -462,6 +617,10 @@ function replaceTokensInFile(
       return replaceCatppuccinToken(token, dataName, flavor, scheme, filePath);
     },
   );
+
+  if (isSvgFile(filePath)) {
+    content = replaceMochaMauveSvgColors(content, flavor, scheme);
+  }
 
   const flavorSlug = slugify(flavor.name);
   const schemeSlug = slugify(scheme.name);
@@ -491,26 +650,9 @@ function processTextFiles(
 }
 
 /**
- * Renames every file in the release folder.
- *
- * This happens after text replacement so the script can still process the
- * copied files at their original paths first.
- */
-function renameReleaseFiles(renameInfo: FileRenameInfo[]): void {
-  for (const file of renameInfo) {
-    if (file.oldAbsolutePath === file.newAbsolutePath) {
-      continue;
-    }
-
-    fs.renameSync(file.oldAbsolutePath, file.newAbsolutePath);
-  }
-}
-
-/**
  * Renames folders inside the wps folder.
  *
- * Folder rename info is already sorted deepest-first so nested folders do not
- * break when their parents are renamed.
+ * Folders are sorted deepest-first so nested folders do not break renaming.
  */
 function renameWpsFolders(folderRenameInfo: FolderRenameInfo[]): void {
   for (const folder of folderRenameInfo) {
@@ -523,10 +665,159 @@ function renameWpsFolders(folderRenameInfo: FolderRenameInfo[]): void {
 }
 
 /**
- * Writes a small JSON file describing the generated release.
+ * Tries to determine the intended SVG raster size from width/height or viewBox.
+ */
+function getSvgRasterSize(svgContent: string): {
+  width: number;
+  height: number;
+} {
+  const widthMatch = svgContent.match(/\bwidth\s*=\s*["']([0-9.]+)(px)?["']/i);
+  const heightMatch = svgContent.match(
+    /\bheight\s*=\s*["']([0-9.]+)(px)?["']/i,
+  );
+
+  if (widthMatch && heightMatch) {
+    const width = Math.max(1, Math.round(Number(widthMatch[1])));
+    const height = Math.max(1, Math.round(Number(heightMatch[1])));
+
+    if (Number.isFinite(width) && Number.isFinite(height)) {
+      return { width, height };
+    }
+  }
+
+  const viewBoxMatch = svgContent.match(
+    /\bviewBox\s*=\s*["']\s*[-0-9.]+\s+[-0-9.]+\s+([0-9.]+)\s+([0-9.]+)\s*["']/i,
+  );
+
+  if (viewBoxMatch) {
+    const width = Math.max(1, Math.round(Number(viewBoxMatch[1])));
+    const height = Math.max(1, Math.round(Number(viewBoxMatch[2])));
+
+    if (Number.isFinite(width) && Number.isFinite(height)) {
+      return { width, height };
+    }
+  }
+
+  throw new Error(
+    "Could not determine SVG dimensions from width/height or viewBox.",
+  );
+}
+
+/**
+ * Writes a 32-bit BMP using A8 R8 G8 B8 bit masks.
  *
- * This file is generated by the script, so it already uses the final
- * flavor-color-release.json name.
+ * Pixels are written as 0xAARRGGBB with BI_BITFIELDS and a BITMAPV4HEADER.
+ * The height is stored as negative so the image stays top-down.
+ */
+function writeBmpArgb8888(
+  outputPath: string,
+  width: number,
+  height: number,
+  rgbaBuffer: Buffer,
+): void {
+  const fileHeaderSize = 14;
+  const dibHeaderSize = 108; // BITMAPV4HEADER
+  const pixelDataSize = width * height * 4;
+  const pixelDataOffset = fileHeaderSize + dibHeaderSize;
+  const fileSize = pixelDataOffset + pixelDataSize;
+
+  const fileHeader = Buffer.alloc(fileHeaderSize);
+  fileHeader.write("BM", 0, 2, "ascii");
+  fileHeader.writeUInt32LE(fileSize, 2);
+  fileHeader.writeUInt16LE(0, 6);
+  fileHeader.writeUInt16LE(0, 8);
+  fileHeader.writeUInt32LE(pixelDataOffset, 10);
+
+  const dibHeader = Buffer.alloc(dibHeaderSize);
+  dibHeader.writeUInt32LE(dibHeaderSize, 0);
+  dibHeader.writeInt32LE(width, 4);
+  dibHeader.writeInt32LE(-height, 8); // top-down rows
+  dibHeader.writeUInt16LE(1, 12); // planes
+  dibHeader.writeUInt16LE(32, 14); // bits per pixel
+  dibHeader.writeUInt32LE(3, 16); // BI_BITFIELDS
+  dibHeader.writeUInt32LE(pixelDataSize, 20);
+  dibHeader.writeInt32LE(2835, 24); // 72 DPI
+  dibHeader.writeInt32LE(2835, 28);
+  dibHeader.writeUInt32LE(0, 32);
+  dibHeader.writeUInt32LE(0, 36);
+  dibHeader.writeUInt32LE(0x00ff0000, 40); // red mask
+  dibHeader.writeUInt32LE(0x0000ff00, 44); // green mask
+  dibHeader.writeUInt32LE(0x000000ff, 48); // blue mask
+  dibHeader.writeUInt32LE(0xff000000, 52); // alpha mask
+  dibHeader.writeUInt32LE(0x57696e20, 56); // 'Win '
+
+  const pixelData = Buffer.alloc(pixelDataSize);
+
+  for (let i = 0; i < width * height; i += 1) {
+    const rgbaOffset = i * 4;
+    const r = rgbaBuffer[rgbaOffset] ?? 0;
+    const g = rgbaBuffer[rgbaOffset + 1] ?? 0;
+    const b = rgbaBuffer[rgbaOffset + 2] ?? 0;
+    const a = rgbaBuffer[rgbaOffset + 3] ?? 255;
+
+    const argb = ((a << 24) | (r << 16) | (g << 8) | b) >>> 0;
+    pixelData.writeUInt32LE(argb, rgbaOffset);
+  }
+
+  fs.writeFileSync(
+    outputPath,
+    Buffer.concat([fileHeader, dibHeader, pixelData]),
+  );
+}
+
+/**
+ * Converts a processed SVG into a BMP using the SVG's intended resolution.
+ *
+ * The output BMP uses A8 R8 G8 B8 channel masks so alpha is preserved.
+ */
+async function convertSvgToBmp(
+  svgPath: string,
+  bmpPath: string,
+): Promise<void> {
+  const svgContent = fs.readFileSync(svgPath, "utf8");
+  const { width, height } = getSvgRasterSize(svgContent);
+
+  const { data } = await sharp(Buffer.from(svgContent))
+    .resize(width, height, {
+      fit: "fill",
+    })
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  writeBmpArgb8888(bmpPath, width, height, data);
+}
+
+/**
+ * Materializes release files.
+ *
+ * Normal files are renamed.
+ * SVG files are converted to BMP at their own SVG resolution, then the source
+ * SVG is removed.
+ */
+async function materializeReleaseFiles(
+  renameInfo: FileRenameInfo[],
+): Promise<void> {
+  for (const file of renameInfo) {
+    if (
+      file.oldAbsolutePath === file.newAbsolutePath &&
+      !isSvgFile(file.oldAbsolutePath)
+    ) {
+      continue;
+    }
+
+    if (isSvgFile(file.oldAbsolutePath)) {
+      await convertSvgToBmp(file.oldAbsolutePath, file.newAbsolutePath);
+      fs.rmSync(file.oldAbsolutePath, { force: true });
+      continue;
+    }
+
+    fs.renameSync(file.oldAbsolutePath, file.newAbsolutePath);
+  }
+}
+
+/**
+ * Writes a small JSON file describing the generated release.
  */
 function writeReleaseInfo(
   releaseFolder: string,
@@ -544,6 +835,8 @@ function writeReleaseInfo(
     scheme: scheme.name,
     schemeId: schemeSlug,
     schemeColor: scheme.color,
+    svgSourceFlavor: SOURCE_SVG_FLAVOR_NAME,
+    svgSourceScheme: SOURCE_SVG_SCHEME_NAME,
     builtAt: new Date().toISOString(),
   };
 
@@ -558,10 +851,6 @@ function writeReleaseInfo(
 
 /**
  * Zips a folder into a .zip file with `.rockbox/` as the top-level folder.
- *
- * This manually adds each file under `.rockbox/` instead of relying on
- * AdmZip's addLocalFolder target path behaviour. That makes the zip structure
- * predictable across AdmZip versions.
  */
 function zipFolder(sourceFolder: string, outputZipPath: string): void {
   const zip = new AdmZip();
@@ -571,7 +860,6 @@ function zipFolder(sourceFolder: string, outputZipPath: string): void {
     const relativePath = path
       .relative(sourceFolder, filePath)
       .replaceAll(path.sep, "/");
-
     const relativeDirectory = path.posix.dirname(relativePath);
     const zipDirectory =
       relativeDirectory === "."
@@ -586,13 +874,6 @@ function zipFolder(sourceFolder: string, outputZipPath: string): void {
 
 /**
  * Builds one release for one flavour/accent combination.
- *
- * Example:
- *   Mocha + Mauve
- *
- * Output:
- *   dist/catppodccin-mocha-mauve-v1.0.0/
- *   dist/release/catppodccin-mocha-mauve-v1.0.0.zip
  */
 async function buildRelease(
   flavor: Flavor,
@@ -614,7 +895,6 @@ async function buildRelease(
     flavorSlug,
     schemeSlug,
   );
-
   const folderRenameInfo = createWpsFolderRenameInfo(
     releaseFolder,
     flavorSlug,
@@ -622,8 +902,7 @@ async function buildRelease(
   );
 
   processTextFiles(releaseFolder, flavor, scheme, renameInfo, folderRenameInfo);
-
-  renameReleaseFiles(renameInfo);
+  await materializeReleaseFiles(renameInfo);
   renameWpsFolders(folderRenameInfo);
   writeReleaseInfo(releaseFolder, flavor, scheme);
 
