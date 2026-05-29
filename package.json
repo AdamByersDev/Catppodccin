@@ -1,0 +1,30 @@
+{
+  "name": "catppodccin",
+  "version": "1.0.0",
+  "description": "A Catppuccin Rockbox theme for iPod Classic Gen 6",
+  "homepage": "https://github.com/AdamByersDev/Catppodccin#readme",
+  "bugs": {
+    "url": "https://github.com/AdamByersDev/Catppodccin/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AdamByersDev/Catppodccin.git"
+  },
+  "license": "MIT",
+  "author": "Adam Byers",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "release": "tsx scripts/release.ts",
+    "release:patch": "npm version patch && npm run release",
+    "release:minor": "npm version minor && npm run release",
+    "release:major": "npm version major && npm run release"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.8",
+    "@types/node": "^25.9.1",
+    "adm-zip": "^0.5.17",
+    "tsx": "^4.22.3",
+    "typescript": "^6.0.3"
+  }
+}
