@@ -15,10 +15,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "release": "tsx scripts/release.ts",
-    "release:patch": "npm version patch && npm run release",
-    "release:minor": "npm version minor && npm run release",
-    "release:major": "npm version major && npm run release"
+    "build": "tsx scripts/build.ts",
+    "build:patch": "npm version patch && npm run build",
+    "build:minor": "npm version minor && npm run build",
+    "build:major": "npm version major && npm run build",
+    "test": "tsx scripts/install-sim.ts && if [ -f ./iPodClassicSim/rockboxui ]; then cd iPodClassicSim && ./rockboxui; fi"
   },
   "devDependencies": {
     "@types/adm-zip": "^0.5.8",
