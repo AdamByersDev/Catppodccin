@@ -152,6 +152,40 @@ function isSvgFile(filePath: string): boolean {
 }
 
 /**
+ * Normalizes paths so folder checks work consistently on Windows/Linux.
+ */
+function normalizePathForChecks(filePath: string): string {
+  return filePath.replaceAll(path.sep, "/").replaceAll("\\", "/");
+}
+
+/**
+ * Returns true when a file lives inside a Rockbox fonts folder.
+ *
+ * Fonts are shared assets, so colour variants should reuse the same .fnt
+ * files instead of creating duplicate prefixed copies for every flavour/accent.
+ */
+function isInsideFontsFolder(filePath: string): boolean {
+  const normalizedPath = normalizePathForChecks(filePath);
+  const pathParts = normalizedPath.split("/");
+
+  return pathParts.includes("fonts");
+}
+
+/**
+ * Returns true when a file should keep its original filename in generated
+ * releases.
+ */
+function shouldKeepOriginalFileName(filePath: string): boolean {
+  const extension = path.extname(filePath).toLowerCase();
+
+  if (extension === ".fnt") {
+    return true;
+  }
+
+  return isInsideFontsFolder(filePath);
+}
+
+/**
  * Gets a normal Catppuccin colour from the selected flavour.
  *
  * Handles tokens like:
@@ -221,11 +255,14 @@ function collectFiles(folderPath: string): string[] {
 /**
  * Builds the final filename for a copied source file.
  *
- * Every file becomes:
+ * Most files become:
  *   flavor-color-filename
  *
  * SVG files are converted to BMP, so they become:
  *   flavor-color-filename.bmp
+ *
+ * Font files are handled before this function is called and keep their
+ * original names so all colour variants can share the same font files.
  */
 function buildNewFileName(
   oldFileName: string,
@@ -263,14 +300,17 @@ function createFileRenameInfo(
 
   return files.map((oldAbsolutePath) => {
     const oldFileName = path.basename(oldAbsolutePath);
-    const newFileName = buildNewFileName(oldFileName, flavorSlug, schemeSlug);
-
-    const directory = path.dirname(oldAbsolutePath);
-    const newAbsolutePath = path.join(directory, newFileName);
 
     const oldRelativePath = path
       .relative(releaseFolder, oldAbsolutePath)
       .replaceAll(path.sep, "/");
+
+    const newFileName = shouldKeepOriginalFileName(oldRelativePath)
+      ? oldFileName
+      : buildNewFileName(oldFileName, flavorSlug, schemeSlug);
+
+    const directory = path.dirname(oldAbsolutePath);
+    const newAbsolutePath = path.join(directory, newFileName);
 
     const newRelativePath = path
       .relative(releaseFolder, newAbsolutePath)
@@ -378,6 +418,10 @@ function replaceFileNameReferences(
   });
 
   for (const file of sortedRenameInfo) {
+    if (file.oldRelativePath === file.newRelativePath) {
+      continue;
+    }
+
     updatedContent = updatedContent.replace(
       new RegExp(escapeRegExp(file.oldRelativePath), "g"),
       file.newRelativePath,
@@ -385,6 +429,10 @@ function replaceFileNameReferences(
   }
 
   for (const file of sortedRenameInfo) {
+    if (file.oldFileName === file.newFileName) {
+      continue;
+    }
+
     const fileNamePattern = new RegExp(
       `(?<!${escapeRegExp(releasePrefix)})${escapeRegExp(file.oldFileName)}`,
       "g",
