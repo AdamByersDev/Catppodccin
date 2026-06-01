@@ -23,6 +23,12 @@
 # Load album art mask
 %xl(n,album_art_mask.svg,0,0)
 
+# Load volume icons
+%xl(o,volume_icons.svg,0,0)
+
+# Load default album art 
+%xl(p,logo.bmp,0,0)
+
 # Display header viewports
 %Vd(header_title)
 %Vd(header_time)
@@ -38,7 +44,10 @@
 %Vd(wps_artist)
 %Vd(wps_album)
 %Vd(wps_number)
+# Show volume bar while changing volume, otherwise show song progress bar
 %Vd(wps_time)
+%?mv(2.0)<%Vd(wps_volume_icons)|%Vd(wps_time)>
+%?mv(2.0)<%Vd(wps_volume)|%Vd(wps_progress)>
 
 #
 # START OF HEADER DEFINITION
@@ -73,7 +82,7 @@
 
 # Album art viewport
 %V(169,29,140,140,-)%VB
-%Cd
+%?C<%Cd|%xd(p)>
 
 # Album art mask
 %V(164,24,150,150,-)
@@ -96,7 +105,7 @@
 %s%al%?ia<%ia|Unknown Artist>
 
 # Album
-%Vl(wps_album,11,92,140,20,2)%Vf(--CATPPUCCIN[subtext0])
+%Vl(wps_album,11,90,140,20,2)%Vf(--CATPPUCCIN[subtext0])
 %s%al%?id<%id|Unknown Album>
 
 # Track number
@@ -106,6 +115,18 @@
 # Current time / remaining time
 %Vl(wps_time,11,187,298,18,2)%Vf(--CATPPUCCIN[text])
 %al%pc%ar-%pr
+
+# Song elapsed progress bar
+%Vl(wps_progress,11,211,298,18,-)
+%pb(0,0,298,18,song_bar.svg)
+
+# Volume icons
+%Vl(wps_volume_icons,11,187,298,18,2)
+%xd(o)
+
+# Volume bar
+%Vl(wps_volume,11,211,298,18,-)
+%pv(0,0,298,18,song_bar.svg)
 
 #
 # END OF WPS CONTENT

@@ -20,6 +20,15 @@
 %xl(l,fast_forward.svg,0,0)
 %xl(m,fast_backward.svg,0,0)
 
+# Load album art mask
+%xl(n,album_art_mask.svg,0,0)
+
+# Rockbox Menu/list mask
+%xl(o,menu_mask.svg,0,0)
+
+# Load default album art 
+%xl(p,logo.bmp,0,0)
+
 # Display custom header viewport
 %Vd(header_title)
 %Vd(header_time)
@@ -27,7 +36,11 @@
 %Vd(header_battery)
 
 # Rockbox menu/list area
-%Vi(-,0,18,160,220,1)%Vf(--CATPPUCCIN[text])
+%Vi(-,11,29,140,200,1)%Vf(--CATPPUCCIN[text])
+
+# Track info viewports
+%Vd(track_title)
+%Vd(track_artist)
 
 #
 # START OF HEADER DEFINITION
@@ -52,3 +65,50 @@
 #
 # END OF HEADER DEFINITION
 #
+
+#
+# START OF TRACK INFO
+#
+
+# Track title
+%Vl(track_title,169,187,140,26,1)%Vf(--CATPPUCCIN[accent])
+%s%al%?it<%it|Catppodccin>
+
+# Artist
+%Vl(track_artist,169,215,140,20,2)%Vf(--CATPPUCCIN[subtext0])
+%s%al%?ia<%ia|--CATPPUCCIN[version]>
+
+#
+# END OF ALBUM INFO
+#
+
+
+#
+# START OF ALBUM ART
+#
+
+
+
+# Album art setup
+%Cl(0,0,140,140,c,c)
+
+# Album art viewport
+%V(169,29,140,140,-)%VB
+%?C<%Cd|%xd(p)>
+
+# Album art mask
+%V(164,24,150,150,-)
+%xd(n)
+
+#
+# END OF ALBUM ART
+#
+
+# ------------------------------------------------------------
+# WPS backdrop
+#
+# This intentionally stays at the bottom.
+# Moving it earlier breaks the album art mask/layering.
+# Do not move unless retesting the album art stack.
+# ------------------------------------------------------------
+%X(sbs_bd.svg)

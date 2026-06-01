@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   height="14"
+   viewBox="0 -960 672 672"
+   width="14"
+   fill="#1f1f1f"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="volume_down.svg"
+   inkscape:version="1.4.3 (0d15f75042, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="32"
+     inkscape:cx="6.125"
+     inkscape:cy="11.25"
+     inkscape:window-width="1920"
+     inkscape:window-height="997"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1" />
+  <path
+     d="m 155.992,-521.53051 h -105.5 c -9.2,0 -17.083333,-3.73824 -23.65,-11.21472 -6.566667,-7.47648 -9.85,-16.45205 -9.85,-26.9267 v -128.65612 c 0,-10.47466 3.283333,-19.45023 9.85,-26.92671 6.566667,-7.47647 14.45,-11.21471 23.65,-11.21471 h 105.5 l 127,-144.59582 c 10.66667,-12.14453 22.83333,-14.91501 36.5,-8.31142 13.66667,6.60359 20.5,18.3724 20.5,35.30643 v 440.02672 c 0,16.93403 -6.83333,28.72181 -20.5,35.36335 -13.66667,6.64154 -25.83333,3.89005 -36.5,-8.25448 z m 349,-102.46948 c 0,28.08423 -6.33333,56.83261 -19,86.24514 -12.66667,29.41254 -30.83333,51.13987 -54.5,65.18198 -5.66667,3.41565 -11.16667,3.51052 -16.5,0.28463 -5.33333,-3.22589 -8,-8.81237 -8,-16.75945 v -268.76606 c 0,-7.94707 2.66667,-13.53356 8,-16.75945 5.33333,-3.22589 10.83333,-3.13101 16.5,0.28464 23.66667,12.90356 41.83333,34.15649 54.5,63.75878 12.66667,29.6023 19,58.44556 19,86.52979 z m -232,-128.08686 -89.5,101.90021 h -99.5 v 52.37329 h 99.5 l 89.5,101.90021 z"
+     id="path1"
+     style="stroke-width:1.06703;fill:#cdd6f4;fill-opacity:1"
+     sodipodi:nodetypes="csssssscsssssscsscsssscssccccccc" />
+</svg>
