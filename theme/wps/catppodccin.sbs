@@ -1,0 +1,54 @@
+# Catppodccin SBS
+
+%wd
+%Fl(2,Roboto-14.fnt)
+
+# Load battery icons
+%xl(a,battery_0.svg,0,0)
+%xl(b,battery_1.svg,0,0)
+%xl(c,battery_2.svg,0,0)
+%xl(d,battery_3.svg,0,0)
+%xl(e,battery_4.svg,0,0)
+%xl(f,battery_5.svg,0,0)
+%xl(g,battery_6.svg,0,0)
+%xl(h,battery_7.svg,0,0)
+%xl(i,battery_charge.svg,0,0)
+
+# Load playback icons
+%xl(j,play.svg,0,0)
+%xl(k,pause.svg,0,0)
+%xl(l,fast_forward.svg,0,0)
+%xl(m,fast_backward.svg,0,0)
+
+# Display custom header viewport
+%Vd(header_title)
+%Vd(header_time)
+%Vd(header_status)
+%Vd(header_battery)
+
+# Rockbox menu/list area
+%Vi(-,0,18,160,220,1)%Vf(--CATPPUCCIN[text])
+
+#
+# START OF HEADER DEFINITION
+#
+
+# Left title
+%Vl(header_title,2,2,126,20,2)%Vf(--CATPPUCCIN[text])
+%s%al%?Lt<%Lt|Catppodccin>
+
+# Center time
+%Vl(header_time,130,0,60,18,2)%Vf(--CATPPUCCIN[text])
+%ac%cH:%cM
+
+# Playback status icon
+%Vl(header_status,272,1,16,16,-)
+%?mp<|%xd(j)|%xd(k)|%xd(l)|%xd(m)>
+
+# Right battery
+%Vl(header_battery,290,1,28,16,-)
+%?bp<%xd(i)|%?bl<%xd(a)|%xd(a)|%xd(b)|%xd(c)|%xd(d)|%xd(e)|%xd(f)|%xd(g)|%xd(h)>>
+
+#
+# END OF HEADER DEFINITION
+#

@@ -16,6 +16,7 @@
   "type": "module",
   "scripts": {
     "build": "tsx scripts/build.ts",
+    "build:test": "npm run build && npm run test",
     "build:patch": "npm version patch && npm run build",
     "build:minor": "npm version minor && npm run build",
     "build:major": "npm version major && npm run build",
