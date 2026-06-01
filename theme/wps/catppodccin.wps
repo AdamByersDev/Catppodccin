@@ -29,6 +29,17 @@
 # Load default album art 
 %xl(p,logo.bmp,0,0)
 
+# Load shuffle icons
+%xl(q,shuffle_off.svg,0,0)
+%xl(r,shuffle_on.svg,0,0)
+
+# Load repeat icons
+%xl(s,repeat_off.svg,0,0)
+%xl(t,repeat_on.svg,0,0)
+%xl(u,repeat_ab.svg,0,0)
+%xl(v,repeat_one.svg,0,0)
+%xl(w,repeat_shuffle.svg,0,0)
+
 # Display header viewports
 %Vd(header_title)
 %Vd(header_time)
@@ -43,7 +54,10 @@
 %Vd(wps_title)
 %Vd(wps_artist)
 %Vd(wps_album)
+%Vd(wps_repeat)
+%Vd(wps_shuffle)
 %Vd(wps_number)
+
 # Show volume bar while changing volume, otherwise show song progress bar
 %Vd(wps_time)
 %?mv(2.0)<%Vd(wps_volume_icons)|%Vd(wps_time)>
@@ -108,6 +122,14 @@
 %Vl(wps_album,11,90,140,20,2)%Vf(--CATPPUCCIN[subtext0])
 %s%al%?id<%id|Unknown Album>
 
+# Repeat icon
+%Vl(wps_repeat,11,113,24,24,-)
+%?mm<%xd(s)|%xd(t)|%xd(v)|%xd(w)|%xd(u)>
+
+# Shuffle icon
+%Vl(wps_shuffle,37,113,24,24,-)
+%?ps<%xd(r)|%xd(q)>
+
 # Track number
 %Vl(wps_number,11,140,140,20,2)%Vf(--CATPPUCCIN[subtext0])
 %s%al%pp %Sx(of) %pe
@@ -126,7 +148,7 @@
 
 # Volume bar
 %Vl(wps_volume,11,211,298,18,-)
-%pv(0,0,298,18,song_bar.svg)
+%pv(0,0,298,18,volume_bar.svg)
 
 #
 # END OF WPS CONTENT
