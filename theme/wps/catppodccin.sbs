@@ -1,9 +1,23 @@
-# Catppodccin SBS
+#####################################
+#                                   #
+#          Catppodccin SBS          #
+#                                   #
+#####################################
 
+# Disable Status Bar
 %wd
+
+# Load smaller font
 %Fl(2,Roboto-14.fnt)
 
-# Load battery icons
+
+###########################################
+#                                         #
+#          Load icons and images          #
+#                                         #
+###########################################
+
+# Battery icons
 %xl(a,battery_0.svg,0,0)
 %xl(b,battery_1.svg,0,0)
 %xl(c,battery_2.svg,0,0)
@@ -14,13 +28,13 @@
 %xl(h,battery_7.svg,0,0)
 %xl(i,battery_charge.svg,0,0)
 
-# Load playback icons
+# Playback icons
 %xl(j,play.svg,0,0)
 %xl(k,pause.svg,0,0)
 %xl(l,fast_forward.svg,0,0)
 %xl(m,fast_backward.svg,0,0)
 
-# Load album art mask
+# Album art mask
 %xl(n,album_art_mask.svg,0,0)
 
 # Rockbox Menu/list mask
@@ -28,6 +42,13 @@
 
 # Load default album art 
 %xl(p,logo.bmp,0,0)
+
+
+#######################################
+#                                     #
+#          Display Viewports          #
+#                                     #
+#######################################
 
 # Display custom header viewport
 %Vd(header_title)
@@ -42,9 +63,12 @@
 %Vd(track_title)
 %Vd(track_artist)
 
-#
-# START OF HEADER DEFINITION
-#
+
+############################
+#                          #
+#          HEADER          #
+#                          #
+############################
 
 # Left title
 %Vl(header_title,2,2,126,20,2)%Vf(--CATPPUCCIN[text])
@@ -62,13 +86,12 @@
 %Vl(header_battery,290,1,28,16,-)
 %?bp<%xd(i)|%?bl<%xd(a)|%xd(a)|%xd(b)|%xd(c)|%xd(d)|%xd(e)|%xd(f)|%xd(g)|%xd(h)>>
 
-#
-# END OF HEADER DEFINITION
-#
 
-#
-# START OF TRACK INFO
-#
+################################
+#                              #
+#          Track Info          #
+#                              #
+################################
 
 # Track title
 %Vl(track_title,169,187,140,26,1)%Vf(--CATPPUCCIN[accent])
@@ -78,16 +101,12 @@
 %Vl(track_artist,169,215,140,20,2)%Vf(--CATPPUCCIN[subtext0])
 %s%al%?ia<%ia|--CATPPUCCIN[version]>
 
-#
-# END OF ALBUM INFO
-#
 
-
-#
-# START OF ALBUM ART
-#
-
-
+###############################
+#                             #
+#          Album Art          #
+#                             #
+###############################
 
 # Album art setup
 %Cl(0,0,140,140,c,c)
@@ -99,10 +118,6 @@
 # Album art mask
 %V(164,24,150,150,-)
 %xd(n)
-
-#
-# END OF ALBUM ART
-#
 
 # ------------------------------------------------------------
 # WPS backdrop
