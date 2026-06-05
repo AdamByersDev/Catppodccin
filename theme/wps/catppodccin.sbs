@@ -18,15 +18,8 @@
 ###########################################
 
 # Battery icons
-%xl(a,battery_0.svg,0,0)
-%xl(b,battery_1.svg,0,0)
-%xl(c,battery_2.svg,0,0)
-%xl(d,battery_3.svg,0,0)
-%xl(e,battery_4.svg,0,0)
-%xl(f,battery_5.svg,0,0)
-%xl(g,battery_6.svg,0,0)
-%xl(h,battery_7.svg,0,0)
-%xl(i,battery_charge.svg,0,0)
+%xl(a,battery_empty.svg,0,0)
+%xl(b,battery_charge.svg,0,0)
 
 # Playback icons
 %xl(j,play.svg,0,0)
@@ -50,18 +43,35 @@
 #                                     #
 #######################################
 
+# Main screen
+%Vd(main)
+
 # Display custom header viewport
-%Vd(header_title)
-%Vd(header_time)
-%Vd(header_status)
-%Vd(header_battery)
+# %Vd(header_title)
+# %Vd(header_time)
+# %Vd(header_status)
+# %Vd(header_battery)
 
 # Rockbox menu/list area
 %Vi(-,11,29,140,200,1)%Vf(--CATPPUCCIN[text])
 
 # Track info viewports
-%Vd(track_title)
-%Vd(track_artist)
+# %Vd(track_title)
+# %Vd(track_artist)
+
+
+##########################
+#                        #
+#          MAIN          #
+#                        #
+##########################
+
+# Batter Outline Backgroun 
+%Vl(main,290,1,28,16,-)%VB
+%?bc<|%xd(a)>
+# Battery Full or charge
+%Vl(main,290,1,28,16,-)
+%?bc<%xd(b)|%bl(0,0,28,16,battery_full.svg)>
 
 
 ############################
@@ -83,8 +93,8 @@
 %?mp<|%xd(j)|%xd(k)|%xd(l)|%xd(m)>
 
 # Right battery
-%Vl(header_battery,290,1,28,16,-)
-%?bp<%xd(i)|%?bl<%xd(a)|%xd(a)|%xd(b)|%xd(c)|%xd(d)|%xd(e)|%xd(f)|%xd(g)|%xd(h)>>
+# %Vl(header_battery,290,1,28,16,-)
+# %?bp<%xd(i)|%?bl<%xd(a)|%xd(a)|%xd(b)|%xd(c)|%xd(d)|%xd(e)|%xd(f)|%xd(g)|%xd(h)>>
 
 
 ################################
