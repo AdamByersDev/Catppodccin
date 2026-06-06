@@ -91,7 +91,12 @@
 %Vl(main,169,215,140,20,2)%Vf(--CATPPUCCIN[subtext0])
 %s%al%?ia<%ia|--CATPPUCCIN[version]>
 
-# Album art viewport
+
+###############################
+#          Album Art          #
+###############################
+
+# Album art
 %Vl(main,169,29,140,140,-)%VB
 %?C<%Cd|%xd(h)>
 
@@ -102,7 +107,7 @@
 
 ###########################################################
 #                                                         #
-#                           MAIN                          #
+#                            BD                           #
 #          This intentionally stays at the bottom         #
 #   Moving it earlier breaks the album art mask/layering  #
 #                                                         #

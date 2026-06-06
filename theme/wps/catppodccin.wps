@@ -1,164 +1,151 @@
-# Catppodccin WPS
+###########################################################
+#                                                         #
+#                     Catppodccin SBS                     #
+#                                                         #
+###########################################################
 
+# Disable Status Bar
 %wd
+
+# Load smaller font
 %Fl(2,Roboto-14.fnt)
 
-# Load battery icons
-%xl(a,battery_0.svg,0,0)
-%xl(b,battery_1.svg,0,0)
-%xl(c,battery_2.svg,0,0)
-%xl(d,battery_3.svg,0,0)
-%xl(e,battery_4.svg,0,0)
-%xl(f,battery_5.svg,0,0)
-%xl(g,battery_6.svg,0,0)
-%xl(h,battery_7.svg,0,0)
-%xl(i,battery_charge.svg,0,0)
 
-# Load playback icons
-%xl(j,play.svg,0,0)
-%xl(k,pause.svg,0,0)
-%xl(l,fast_forward.svg,0,0)
-%xl(m,fast_backward.svg,0,0)
+###########################################################
+#                                                         #
+#                  Load icons and images                  #
+#                                                         #
+###########################################################
 
-# Load album art mask
-%xl(n,album_art_mask.svg,0,0)
+# Battery icons
+%xl(a,battery_empty.svg,0,0)
+%xl(b,battery_charge.svg,0,0)
 
-# Load volume icons
-%xl(o,volume_icons.svg,0,0)
+# Playback icons
+%xl(c,play.svg,0,0)
+%xl(d,pause.svg,0,0)
+%xl(e,fast_forward.svg,0,0)
+%xl(f,fast_backward.svg,0,0)
+
+# Album art mask
+%xl(g,album_art_mask.svg,0,0)
 
 # Load default album art 
-%xl(p,logo.bmp,0,0)
+%xl(h,logo.bmp,0,0)
 
-# Load shuffle icons
-%xl(q,shuffle_off.svg,0,0)
-%xl(r,shuffle_on.svg,0,0)
+# Volume icons
+%xl(i,volume_icons.svg,0,0)
+
+# Shuffle icons
+%xl(j,shuffle_on.svg,0,0)
+%xl(k,shuffle_off.svg,0,0)
 
 # Load repeat icons
-%xl(s,repeat_off.svg,0,0)
-%xl(t,repeat_on.svg,0,0)
-%xl(u,repeat_ab.svg,0,0)
-%xl(v,repeat_one.svg,0,0)
-%xl(w,repeat_shuffle.svg,0,0)
+%xl(l,repeat_off.svg,0,0)
+%xl(m,repeat_on.svg,0,0)
+%xl(n,repeat_one.svg,0,0)
+%xl(o,repeat_shuffle.svg,0,0)
+%xl(p,repeat_ab.svg,0,0)
 
-# Display header viewports
-%Vd(header_title)
-%Vd(header_time)
-%Vd(header_status)
-%Vd(header_battery)
+# Load album art
+%Cl(0,0,140,140,c,c)
 
-# Display album art viewports
-%Vd(album_art)
-%Vd(album_art_mask)
+###########################################################
+#                                                         #
+#                    Display Viewports                    #
+#                                                         #
+###########################################################
 
-# Display WPS content viewports
-%Vd(wps_title)
-%Vd(wps_artist)
-%Vd(wps_album)
-%Vd(wps_repeat)
-%Vd(wps_shuffle)
-%Vd(wps_number)
+# Main screen
+%Vd(main)
 
-# Show volume bar while changing volume, otherwise show song progress bar
-%Vd(wps_time)
-%?mv(2.0)<%Vd(wps_volume_icons)|%Vd(wps_time)>
-%?mv(2.0)<%Vd(wps_volume)|%Vd(wps_progress)>
 
-#
-# START OF HEADER DEFINITION
-#
+###########################################################
+#                                                         #
+#                           MAIN                          #
+#                                                         #
+###########################################################
+################################
+#          STATUS BAR          #
+################################
 
-# Left title: use track title on the WPS, not %Lt
-%Vl(header_title,2,2,126,20,2)%Vf(--CATPPUCCIN[text])
+# Battery outline background if not charging
+%Vl(main,290,1,28,16,-)%VB
+%?bc<|%xd(a)>
+
+# Battery charge or level
+%Vl(main,290,1,28,16,-)
+%?bc<%xd(b)|%bl(0,0,28,16,battery_full.svg)>
+
+# Page title
+%Vl(main,2,2,126,20,2)%Vf(--CATPPUCCIN[text])
 %s%al%?it<%it|Catppodccin>
 
-# Center time
-%Vl(header_time,130,0,60,18,2)%Vf(--CATPPUCCIN[text])
+# Time
+%Vl(main,130,0,60,18,2)%Vf(--CATPPUCCIN[text])
 %ac%cH:%cM
 
 # Playback status icon
-%Vl(header_status,272,1,16,16,-)
-%?mp<|%xd(j)|%xd(k)|%xd(l)|%xd(m)>
+%Vl(main,272,1,16,16,-)
+%?mp<|%xd(c)|%xd(d)|%xd(e)|%xd(f)>
 
-# Right battery
-%Vl(header_battery,290,1,28,16,-)
-%?bp<%xd(i)|%?bl<%xd(a)|%xd(a)|%xd(b)|%xd(c)|%xd(d)|%xd(e)|%xd(f)|%xd(g)|%xd(h)>>
 
-#
-# END OF HEADER DEFINITION
-#
-
-#
-# START OF ALBUM ART
-#
-
-# Album art setup
-%Cl(0,0,140,140,c,c)
-
-# Album art viewport
-%V(169,29,140,140,-)%VB
-%?C<%Cd|%xd(p)>
-
-# Album art mask
-%V(164,24,150,150,-)
-%xd(n)
-
-#
-# END OF ALBUM ART
-#
-
-#
-# START OF WPS CONTENT
-#
+################################
+#          Track Info          #
+################################
 
 # Track title
-%Vl(wps_title,11,38,140,26,1)%Vf(--CATPPUCCIN[accent])
+%Vl(main,11,38,140,26,1)%Vf(--CATPPUCCIN[accent])
 %s%al%?it<%it|Unknown Title>
 
 # Artist
-%Vl(wps_artist,11,68,140,20,2)%Vf(--CATPPUCCIN[subtext0])
+%Vl(main,11,68,140,20,2)%Vf(--CATPPUCCIN[subtext0])
 %s%al%?ia<%ia|Unknown Artist>
 
 # Album
-%Vl(wps_album,11,90,140,20,2)%Vf(--CATPPUCCIN[subtext0])
+%Vl(main,11,90,140,20,2)%Vf(--CATPPUCCIN[subtext0])
 %s%al%?id<%id|Unknown Album>
 
-# Repeat icon
-%Vl(wps_repeat,11,113,24,24,-)
-%?mm<%xd(s)|%xd(t)|%xd(v)|%xd(w)|%xd(u)>
-
 # Shuffle icon
-%Vl(wps_shuffle,37,113,24,24,-)
-%?ps<%xd(r)|%xd(q)>
+%Vl(main,37,113,24,24,-)
+%?ps<%xd(j)|%xd(k)>
+
+# Repeat icon
+%Vl(main,11,113,24,24,-)
+%?mm<%xd(l)|%xd(m)|%xd(n)|%xd(o)|%xd(p)>
 
 # Track number
-%Vl(wps_number,11,140,140,20,2)%Vf(--CATPPUCCIN[subtext0])
+%Vl(main,11,140,140,20,2)%Vf(--CATPPUCCIN[subtext0])
 %s%al%pp %Sx(of) %pe
 
-# Current time / remaining time
-%Vl(wps_time,11,187,298,18,2)%Vf(--CATPPUCCIN[text])
-%al%pc%ar-%pr
+# Current/Remaining time or volume icons
+%Vl(main,11,187,298,18,2)%Vf(--CATPPUCCIN[text])
+%?mv(2.0)<%xd(i)|%al%pc%ar-%pr>
 
-# Song elapsed progress bar
-%Vl(wps_progress,11,211,298,18,-)
-%pb(0,0,298,18,song_bar.svg)
+# Song progress bar or volume bar
+%Vl(main,11,211,298,18,-)
+%?mv(2.0)<%pv(0,0,298,18,volume_bar.svg)|%pb(0,0,298,18,song_bar.svg)>
 
-# Volume icons
-%Vl(wps_volume_icons,11,187,298,18,2)
-%xd(o)
 
-# Volume bar
-%Vl(wps_volume,11,211,298,18,-)
-%pv(0,0,298,18,volume_bar.svg)
+###############################
+#          Album Art          #
+###############################
 
-#
-# END OF WPS CONTENT
-#
+# Album art
+%Vl(main,169,29,140,140,-)%VB
+%?C<%Cd|%xd(h)>
 
-# ------------------------------------------------------------
-# WPS backdrop
-#
-# This intentionally stays at the bottom.
-# Moving it earlier breaks the album art mask/layering.
-# Do not move unless retesting the album art stack.
-# ------------------------------------------------------------
+# Album art mask
+%Vl(main,164,24,150,150,-)
+%xd(g)
+
+
+###########################################################
+#                                                         #
+#                            BD                           #
+#          This intentionally stays at the bottom         #
+#   Moving it earlier breaks the album art mask/layering  #
+#                                                         #
+###########################################################
+
 %X(wps_bd.svg)
