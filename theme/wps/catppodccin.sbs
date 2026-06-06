@@ -22,118 +22,90 @@
 %xl(b,battery_charge.svg,0,0)
 
 # Playback icons
-%xl(j,play.svg,0,0)
-%xl(k,pause.svg,0,0)
-%xl(l,fast_forward.svg,0,0)
-%xl(m,fast_backward.svg,0,0)
+%xl(c,play.svg,0,0)
+%xl(d,pause.svg,0,0)
+%xl(e,fast_forward.svg,0,0)
+%xl(f,fast_backward.svg,0,0)
 
 # Album art mask
-%xl(n,album_art_mask.svg,0,0)
-
-# Rockbox Menu/list mask
-%xl(o,menu_mask.svg,0,0)
+%xl(g,album_art_mask.svg,0,0)
 
 # Load default album art 
-%xl(p,logo.bmp,0,0)
+%xl(h,logo.bmp,0,0)
 
+# Load album art
+%Cl(0,0,140,140,c,c)
 
-#######################################
-#                                     #
-#          Display Viewports          #
-#                                     #
-#######################################
+###########################################################
+#                                                         #
+#                    Display Viewports                    #
+#                                                         #
+###########################################################
 
 # Main screen
 %Vd(main)
 
-# Display custom header viewport
-# %Vd(header_title)
-# %Vd(header_time)
-# %Vd(header_status)
-# %Vd(header_battery)
-
 # Rockbox menu/list area
-%Vi(-,11,29,140,200,1)%Vf(--CATPPUCCIN[text])
-
-# Track info viewports
-# %Vd(track_title)
-# %Vd(track_artist)
+%Vi(-,16,34,130,190,1)%Vf(--CATPPUCCIN[text])
 
 
-##########################
-#                        #
-#          MAIN          #
-#                        #
-##########################
+###########################################################
+#                                                         #
+#                           MAIN                          #
+#                                                         #
+###########################################################
+################################
+#          STATUS BAR          #
+################################
 
-# Batter Outline Backgroun 
+# Battery outline background if not charging
 %Vl(main,290,1,28,16,-)%VB
 %?bc<|%xd(a)>
-# Battery Full or charge
+
+# Battery charge or level
 %Vl(main,290,1,28,16,-)
 %?bc<%xd(b)|%bl(0,0,28,16,battery_full.svg)>
 
-
-############################
-#                          #
-#          HEADER          #
-#                          #
-############################
-
-# Left title
-%Vl(header_title,2,2,126,20,2)%Vf(--CATPPUCCIN[text])
+# Page title
+%Vl(main,2,2,126,20,2)%Vf(--CATPPUCCIN[text])
 %s%al%?Lt<%Lt|Catppodccin>
 
-# Center time
-%Vl(header_time,130,0,60,18,2)%Vf(--CATPPUCCIN[text])
+# Time
+%Vl(main,130,0,60,18,2)%Vf(--CATPPUCCIN[text])
 %ac%cH:%cM
 
 # Playback status icon
-%Vl(header_status,272,1,16,16,-)
-%?mp<|%xd(j)|%xd(k)|%xd(l)|%xd(m)>
-
-# Right battery
-# %Vl(header_battery,290,1,28,16,-)
-# %?bp<%xd(i)|%?bl<%xd(a)|%xd(a)|%xd(b)|%xd(c)|%xd(d)|%xd(e)|%xd(f)|%xd(g)|%xd(h)>>
+%Vl(main,272,1,16,16,-)
+%?mp<|%xd(c)|%xd(d)|%xd(e)|%xd(f)>
 
 
 ################################
-#                              #
 #          Track Info          #
-#                              #
 ################################
 
 # Track title
-%Vl(track_title,169,187,140,26,1)%Vf(--CATPPUCCIN[accent])
+%Vl(main,169,187,140,26,1)%Vf(--CATPPUCCIN[accent])
 %s%al%?it<%it|Catppodccin>
 
 # Artist
-%Vl(track_artist,169,215,140,20,2)%Vf(--CATPPUCCIN[subtext0])
+%Vl(main,169,215,140,20,2)%Vf(--CATPPUCCIN[subtext0])
 %s%al%?ia<%ia|--CATPPUCCIN[version]>
 
-
-###############################
-#                             #
-#          Album Art          #
-#                             #
-###############################
-
-# Album art setup
-%Cl(0,0,140,140,c,c)
-
 # Album art viewport
-%V(169,29,140,140,-)%VB
-%?C<%Cd|%xd(p)>
+%Vl(main,169,29,140,140,-)%VB
+%?C<%Cd|%xd(h)>
 
 # Album art mask
-%V(164,24,150,150,-)
-%xd(n)
+%Vl(main,164,24,150,150,-)
+%xd(g)
 
-# ------------------------------------------------------------
-# WPS backdrop
-#
-# This intentionally stays at the bottom.
-# Moving it earlier breaks the album art mask/layering.
-# Do not move unless retesting the album art stack.
-# ------------------------------------------------------------
+
+###########################################################
+#                                                         #
+#                           MAIN                          #
+#          This intentionally stays at the bottom         #
+#   Moving it earlier breaks the album art mask/layering  #
+#                                                         #
+###########################################################
+
 %X(sbs_bd.svg)
