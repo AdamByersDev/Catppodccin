@@ -30,10 +30,10 @@
 # Album art mask
 %xl(g,album_art_mask.svg,0,0)
 
-# Load default album art 
+# Default album art 
 %xl(h,logo.bmp,0,0)
 
-# Load album art
+# Album art
 %Cl(0,0,140,140,c,c)
 
 ###########################################################
@@ -47,7 +47,6 @@
 
 # Rockbox menu/list area
 %Vi(-,16,34,130,190,1)%Vf(--CATPPUCCIN[text])
-
 
 ###########################################################
 #                                                         #
